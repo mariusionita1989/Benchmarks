@@ -9,11 +9,11 @@ namespace Benchmarks
     {
         static void Main(string[] args)
         {
-            int length = 50000000;
+            int length = 500000000;
             byte[] input = RandomByteArrayGenerator.GenerateRandomByteArray(length);
             Span<byte> span = input.AsSpan();
             Stopwatch sw = Stopwatch.StartNew();
-            FNVHash32.SpanHash(span);
+            FNVHash64.Hash(span);
             sw.Stop();
             Console.WriteLine("Operation took " + sw.ElapsedTicks + " ticks");
         }
