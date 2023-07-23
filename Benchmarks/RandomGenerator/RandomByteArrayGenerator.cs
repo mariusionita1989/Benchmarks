@@ -13,5 +13,15 @@ namespace Benchmarks.RandomGenerator
             random.NextBytes(byteArray);
             return byteArray;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static int[] GenerateRandomIntArray(int length)
+        {
+            int[] intArray = new int[length];
+            for (int i = 0; i < length; i++)
+                intArray[i] = random.Next();
+            
+            return intArray;
+        }
     }
 }

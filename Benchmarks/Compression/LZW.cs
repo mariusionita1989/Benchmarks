@@ -1,158 +1,127 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
+﻿//using Benchmarks.Hash;
+//using System.Runtime.CompilerServices;
+//using System.Text;
 
-namespace Benchmarks.Compression
-{
-    public static class LZWCompression
-    {
-        //[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        //public static List<ushort> Compress(byte[] data)
-        //{
-        //    Dictionary<string, ushort> dictionary = new Dictionary<string, ushort>();
-        //    for (int i = 0; i < 256; i++)
-        //    {
-        //        dictionary.Add(((char)i).ToString(), (ushort)i);
-        //    }
+//namespace Benchmarks.Compression
+//{
+//    public static class LZWCompression
+//    {
+//        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+//        public static unsafe List<ushort> Compress(Span<byte> data)
+//        {
+//            const ushort dictionarySize = 256;
+//            const int dictionaryMaxSize = 65536;
+//            Span<byte> initialDictionary = new byte[] { 
+//                                                          0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,
+//                                                         16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,
+//                                                         32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,
+//                                                         48,  48,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,  61,  62,  63,
+//                                                         64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,
+//                                                         80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,
+//                                                         96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+//                                                        112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127,
+//                                                        128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143,
+//                                                        144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
+//                                                        160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+//                                                        176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
+//                                                        192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+//                                                        208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+//                                                        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,
+//                                                        240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255
+//                                                      }.AsSpan();
 
-        //    List<ushort> compressedData = new List<ushort>();
-        //    string currentString = string.Empty;
+//            ushort[] dictionary = new ushort[dictionaryMaxSize];
+//            int length = data.Length;
+//            int compressionListlength = length >> 1;
+//            int dictionaryCount = dictionary.Length;
 
-        //    foreach (byte b in data)
-        //    {
-        //        string nextString = currentString + (char)b;
-        //        if (dictionary.ContainsKey(nextString))
-        //        {
-        //            currentString = nextString;
-        //        }
-        //        else
-        //        {
-        //            compressedData.Add(dictionary[currentString]);
-        //            dictionary.Add(nextString, (ushort)dictionary.Count);
-        //            currentString = ((char)b).ToString();
-        //        }
-        //    }
+//            for (ushort i = 0; i < dictionarySize; i += 4)
+//            {
+//                dictionary[i  ] = ByteArrayHash.FastUShortHash(initialDictionary.Slice(i  ,1));
+//                dictionary[i+1] = ByteArrayHash.FastUShortHash(initialDictionary.Slice(i+1,1));
+//                dictionary[i+2] = ByteArrayHash.FastUShortHash(initialDictionary.Slice(i+2,1));
+//                dictionary[i+3] = ByteArrayHash.FastUShortHash(initialDictionary.Slice(i+3,1));
+//            }
 
-        //    if (!string.IsNullOrEmpty(currentString))
-        //    {
-        //        compressedData.Add(dictionary[currentString]);
-        //    }
+//            var compressedData = new List<ushort>(compressionListlength);
+//            var sb = new StringBuilder();
+//            fixed (byte* dataPtr = data)
+//            {
+//                byte* ptr = dataPtr;
+//                byte* endPtr = dataPtr + length;
 
-        //    //List<byte> compressedBytes = new List<byte>();
-        //    //for (int i = 0; i < compressedData.Count; i++)
-        //    //{
-        //    //    if (i % 2 == 0)
-        //    //    {
-        //    //        compressedBytes.Add((byte)(compressedData[i] >> 8));
-        //    //        compressedBytes.Add((byte)(compressedData[i] & 0xFF));
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        compressedBytes[compressedBytes.Count - 1] |= (byte)(compressedData[i] >> 8);
-        //    //        compressedBytes.Add((byte)(compressedData[i] & 0xFF));
-        //    //    }
-        //    //}
+//                while (ptr < endPtr)
+//                {
+//                    byte b = *ptr;
+//                    var nextString = sb.Append((char)b).ToString();
+//                    if (dictionary.TryGetValue(nextString, out var code))
+//                    {
+//                        sb.Clear();
+//                        sb.Append(nextString[0]);
+//                    }
+//                    else
+//                    {
+//                        dictionary.Add(nextString, dictionaryCount);
+//                        compressedData.Add(dictionary[sb.ToString()]);
+//                        sb.Clear();
+//                        sb.Append((char)b);
+//                    }
+//                    ptr++;
+//                }
+//            }
 
-        //    return compressedData;
-        //}
+//            if (sb.Length > 0)
+//            {
+//                compressedData.Add(dictionary[sb.ToString()]);
+//            }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static List<ushort> Compress(byte[] data)
-        {
-            var dictionary = new Dictionary<string, ushort>(256, new FastStringComparer());
-            for (ushort i = 0; i < 256; i++)
-            {
-                dictionary.Add(((char)i).ToString(), i);
-            }
+//            return compressedData;
+//        }
 
-            var compressedData = new List<ushort>(data.Length / 2);
-            var sb = new StringBuilder();
-            foreach (var b in data.AsSpan())
-            {
-                var nextString = sb.Append((char)b).ToString();
-                if (dictionary.TryGetValue(nextString, out var code))
-                {
-                    sb.Clear();
-                    sb.Append(nextString[0]);
-                }
-                else
-                {
-                    dictionary.Add(nextString, (ushort)dictionary.Count);
-                    compressedData.Add(dictionary[sb.ToString()]);
-                    sb.Clear();
-                    sb.Append((char)b);
-                }
-            }
+//        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+//        public static byte[] Decompress(byte[] data)
+//        {
+//            Dictionary<int, string> dictionary = new Dictionary<int, string>();
+//            for (int i = 0; i < 256; i++)
+//            {
+//                dictionary.Add(i, ((char)i).ToString());
+//            }
 
-            if (sb.Length > 0)
-            {
-                compressedData.Add(dictionary[sb.ToString()]);
-            }
+//            List<int> compressedData = new List<int>();
+//            for (int i = 0; i < data.Length; i += 2)
+//            {
+//                int value = (data[i] << 8) | data[i + 1];
+//                compressedData.Add(value);
+//            }
 
-            return compressedData;
-        }
+//            List<byte> decompressedBytes = new List<byte>();
+//            string currentString = dictionary[compressedData[0]];
+//            decompressedBytes.AddRange(currentString.ToByteArray());
 
-        private class FastStringComparer : IEqualityComparer<string>
-        {
-            public bool Equals(string x, string y)
-            {
-                return x.AsSpan().SequenceEqual(y.AsSpan());
-            }
+//            for (int i = 1; i < compressedData.Count; i++)
+//            {
+//                string nextString = string.Empty;
+//                if (dictionary.ContainsKey(compressedData[i]))
+//                {
+//                    nextString = dictionary[compressedData[i]];
+//                }
+//                else if (compressedData[i] == dictionary.Count)
+//                {
+//                    nextString = currentString + currentString[0];
+//                }
 
-            public int GetHashCode(string obj)
-            {
-                int hash = 5381;
-                foreach (byte b in obj.AsSpan())
-                {
-                    hash = ((hash << 5) + hash) + b;
-                }
-                return hash;
-            }
-        }
+//                decompressedBytes.AddRange(nextString.ToByteArray());
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static byte[] Decompress(byte[] data)
-        {
-            Dictionary<int, string> dictionary = new Dictionary<int, string>();
-            for (int i = 0; i < 256; i++)
-            {
-                dictionary.Add(i, ((char)i).ToString());
-            }
+//                dictionary.Add(dictionary.Count, currentString + nextString[0]);
+//                currentString = nextString;
+//            }
 
-            List<int> compressedData = new List<int>();
-            for (int i = 0; i < data.Length; i += 2)
-            {
-                int value = (data[i] << 8) | data[i + 1];
-                compressedData.Add(value);
-            }
+//            return decompressedBytes.ToArray();
+//        }
 
-            List<byte> decompressedBytes = new List<byte>();
-            string currentString = dictionary[compressedData[0]];
-            decompressedBytes.AddRange(currentString.ToByteArray());
-
-            for (int i = 1; i < compressedData.Count; i++)
-            {
-                string nextString = string.Empty;
-                if (dictionary.ContainsKey(compressedData[i]))
-                {
-                    nextString = dictionary[compressedData[i]];
-                }
-                else if (compressedData[i] == dictionary.Count)
-                {
-                    nextString = currentString + currentString[0];
-                }
-
-                decompressedBytes.AddRange(nextString.ToByteArray());
-
-                dictionary.Add(dictionary.Count, currentString + nextString[0]);
-                currentString = nextString;
-            }
-
-            return decompressedBytes.ToArray();
-        }
-
-        private static byte[] ToByteArray(this string str)
-        {
-            return System.Text.Encoding.UTF8.GetBytes(str);
-        }
-    }
-}
+//        private static byte[] ToByteArray(this string str)
+//        {
+//            return System.Text.Encoding.UTF8.GetBytes(str);
+//        }
+//    }
+//}
