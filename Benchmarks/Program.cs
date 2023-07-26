@@ -7,9 +7,13 @@ namespace Benchmarks
     {
         static void Main(string[] args)
         {
-            //BenchmarkRunner.Run<PrimeNumberDemo>();
-            //BenchmarkRunner.Run<StringOperationsDemo>();
+            BenchmarkRunner.Run<PrimeNumberDemo>();
+            BenchmarkRunner.Run<StringOperationsDemo>();
             BenchmarkRunner.Run<RandomGeneratorDemo>();
+            BenchmarkRunner.Run<MemoryCopyDemo>();
+            BenchmarkRunner.Run<HashFunctionsDemo>();
+            BenchmarkRunner.Run<ArrayOperationsDemo>();
+            BenchmarkRunner.Run<CacheOperationsDemo>();
         }
     }
 }
