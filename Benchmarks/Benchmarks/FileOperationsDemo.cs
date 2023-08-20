@@ -10,7 +10,8 @@ namespace Benchmarks.Benchmarks
     public class FileOperationsDemo
     {
         private const int length = 1024*64;
-        private string filePath = @"D:\nugets.zip";
+        private string filePath = @"C:\Temp\nugets.zip";
+        private string fileStringPath = @"C:\Temp\cars.txt";
 
         [Benchmark]
         public void ReadBinaryFileWithBuffer()
@@ -21,7 +22,31 @@ namespace Benchmarks.Benchmarks
         [Benchmark]
         public void WriteBinaryFileWithBuffer()
         {
-            WriteFile.WriteBinaryFile(filePath,length);
+            WriteFile.WriteBinaryFile(filePath, length);
+        }
+
+        [Benchmark]
+        public void ReadStringFile()
+        {
+            ReadFile.ReadStringFile(fileStringPath);
+        }
+
+        [Benchmark]
+        public void ReadMemoryMappedFile()
+        {
+            ReadFile.ReadMemoryMappedFile(fileStringPath,length);
+        }
+
+        [Benchmark]
+        public void ParallelReadMemoryMappedFile()
+        {
+            ReadFile.ParallelReadMemoryMappedFile(fileStringPath,length);
+        }
+
+        [Benchmark]
+        public async Task AsyncMemoryMappedFile()
+        {
+            await ReadFile.AsyncReadMemoryMappedFile(fileStringPath,length);
         }
     }
 }

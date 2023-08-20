@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using Benchmarks.Hash;
-using Benchmarks.MemoryCopy;
 using Benchmarks.RandomGenerator;
 
 namespace Benchmarks.Benchmarks
