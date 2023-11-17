@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Benchmarks.FileOperations
 {
